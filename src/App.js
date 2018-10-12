@@ -19,8 +19,35 @@ class App extends Component {
         try {
             //const testData = JSON.parse(this.state.testData);
 
-            let wifiDoc = await firestore.collection('Test').doc('wifi').get();
+            let wifiDoc = await firestore.collection('Test1').doc('wifi').get();
             let wifiDocData = wifiDoc.data();
+            
+            let trainingData = wifiDocData.levels;
+            
+            console.log(trainingData);
+            
+            const net = new brain.NeuralNetwork();
+            let start = Date.now();
+            console.log('start training');
+            await net.trainAsync([...trainingData,...trainingData], {
+                //log: detail => console.log(detail)
+            });
+            console.log('trained in: ' + Math.floor((Date.now() - start) / 1000));
+            
+            
+            const testWifiDoc = await firestore.collection('Test2').doc('wifi').get();
+            const testWifiDocData = testWifiDoc.data();
+            
+            const testData = testWifiDocData.levels;
+    
+            for (let i = 0; i < 10; i++) {
+                const testRandom = testData[Math.floor(Math.random() * testData.length)];
+                console.log(testRandom);
+                const result = net.run(testRandom);
+                console.log(result);
+            }
+            
+            /*
             let trainingData = Object.entries(wifiDocData.bedroom.wifiData).map(([key, value]) => {
                 
                 return value.levels.map(level => {
@@ -32,8 +59,23 @@ class App extends Component {
                     return line;
                 });
             });
-            trainingData = [...trainingData, ...trainingData];
+            */
             
+            // save the data like this: !!! 
+            // [{ input: { bssid1: x, bssid2: y, ... }, { output: { [room]: 1 } }, { ... }];
+            
+            
+            /*
+            Object.entries(wifiDocData).forEach(([key, room]) => {
+                console.log(key);
+                const roomData = Object.entries(room.wifiData).map(([key, value]) => {
+                     
+                     console.log(key, value);
+                     return 1;
+                });
+            });
+            */
+            //{ input: { bssid1: x, bssid2: y, bssid3: z}, output: { kitchen: 1}}
             
             //console.log(trainingData);
             //wifiDocData.bedroom.wifiData.
@@ -42,6 +84,7 @@ class App extends Component {
             //console.log(this.state.testData);
             //console.log(wifiDoc.data());
             //console.log(magnetDoc.data());
+            /*
             trainingData = trainingData.flat();
             console.log(trainingData);
             
@@ -67,6 +110,7 @@ class App extends Component {
             console.log(testData);
             
             console.log(net.run(testData['kitchen']));
+            */
             /*
             wifiDocData = wifiDoc.data();
             const testData = Object.entries(wifiDocData[room].wifiData).map(([key, value]) => {
